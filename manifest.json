@@ -2,7 +2,9 @@
   "name": "Literal Censorship",
   "version": "0.0",
   "permissions": [
-    "https://*/*", "http://*/*"
+    "storage",
+    "https://*/*",
+    "http://*/*"
   ],
   "content_scripts": [
     {
@@ -12,5 +14,13 @@
       "run_at": "document_end"
     }
   ],
+  "browser_action": {
+    "default_icon": {                    // optional
+      "19": "images/icon19.png",           // optional
+      "38": "images/icon38.png"            // optional
+    },
+    "default_title": "Censorship Settings",      // optional; shown in tooltip
+    "default_popup": "popup.html"        // optional
+  },
   "manifest_version": 2
 }
