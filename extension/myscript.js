@@ -1,8 +1,4 @@
-var semanticModules = "div, p, span, h1, h2, h3, h4, h5, h6, a, button" +
-", [class*=item], [class*=Item], [class*=entry], [class*=Entry]" +
-", .userContentWrapper"; // Facebook
-
-
+var semanticModules = "div, blockquote, sub, sup, p, li, td, strong, span, h1, h2, h3, h4, h5, h6, a, button";
 
 // Escape bad characters from user input.
 function escapeRegExp(str) {
@@ -15,21 +11,17 @@ var re;
 // Set to true when the user updates the blacklist
 var regexNeedsUpdate = true;
 
+
+// Blurs out anything that contains a text node containing a blacklisted word.
+// Tries not to remove and add the .censorship-blur class unnecessarily, instead adding
+// a dummy class
 function enforceCensorship() {
   var $newblur = $(semanticModules)
     .filter(function(){
-      var match = re.exec($(this).contents()
+      return re.test($(this).contents()
         .filter(function() {
           return this.nodeType === 3; //Node.TEXT_NODE
         }).text());
-      if (match === null) {
-        return false;
-      } else {
-        //$(this).prepend($("<div/>").text("(" + match + ")").addClass("match"));
-        //$(this).css("alt", match);
-        return true;
-      }
-      // return re.test($(this).text());
     })
     .addClass("my-temp")
     .filter(":not(.my-temp .my-temp)")

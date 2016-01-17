@@ -1,0 +1,13 @@
+/*
+.censorship-blur, .censorship-blur *{
+	color: rgba(0,0,0,0.0) !important;
+	text-shadow: 0 0 8px rgba(0,0,0,0.5) !important;
+}
+
+::selection{
+	color:black !important;
+}*/
+
+.censorship-blur:not(:hover){
+	-webkit-filter: blur(3px);
+}

@@ -11,11 +11,10 @@ function addWord() {
   chrome.storage.sync.get("blacklist", function(items) {
   	var blacklist = items["blacklist"];
   	// Add word to our copy of the blacklist
-    if (blacklist) {
-  		blacklist[word] = true;
-  	} else {
-  		blacklist = {word: true};
-  	}
+    if (blacklist === undefined) {
+      blacklist = {};
+    }
+  	blacklist[word] = true;
     // Set the blacklist with our modified copy
   	chrome.storage.sync.set({"blacklist": blacklist}, function(){
       rerender();
@@ -61,7 +60,7 @@ function rerender() {
   	  });
   	  $("#triggers").html(list);
     } else {
-    	$("#triggers").html("no trigger words set");
+    	$("#triggers").html("blacklist is empty");
     }
   });
 }
