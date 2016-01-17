@@ -3,6 +3,10 @@ var input = document.getElementById("input");
 // Add the word from $("#input") to the stored blacklist
 function addWord() {
   var word = input.value;
+  if (word === "") {
+    $("#response").html("Please enter a word");
+    return;
+  }
   // Get the stored blacklist
   chrome.storage.sync.get("blacklist", function(items) {
   	var blacklist = items["blacklist"];

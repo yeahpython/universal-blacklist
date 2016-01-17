@@ -1,4 +1,4 @@
-var semanticModules = "p, span, h1, h2, h3, h4, h5, h6, a, button" +
+var semanticModules = "div, p, span, h1, h2, h3, h4, h5, h6, a, button" +
 ", [class*=item], [class*=Item], [class*=entry], [class*=Entry]" +
 ", .userContentWrapper"; // Facebook
 
@@ -18,7 +18,10 @@ var regexNeedsUpdate = true;
 function enforceCensorship() {
   var $newblur = $(semanticModules)
     .filter(function(){
-      var match = re.exec($(this).text());
+      var match = re.exec($(this).contents()
+        .filter(function() {
+          return this.nodeType === 3; //Node.TEXT_NODE
+        }).text());
       if (match === null) {
         return false;
       } else {
