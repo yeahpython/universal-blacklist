@@ -5,6 +5,23 @@ function escapeRegExp(str) {
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
 
+function makeRegexCharactersOkay(string){
+    var hex, i;
+
+    var result = "";
+    for (i=0; i<string.length; i++) {
+        hex = string.charCodeAt(i);
+        if (hex < 256) {
+          result += string.charAt(i);
+        } else {
+          hex = hex.toString(16);
+          result += "\\u" + (("000"+hex).slice(-4));
+        }
+    }
+    console.log(result);
+    return result;
+}
+
 // This will be a regex that matches blacklisted strings
 var re;
 
@@ -27,8 +44,11 @@ function enforceCensorship() {
     .filter(":not(.my-temp .my-temp)")
     .addClass("new-censorship-blur");
   $(".my-temp").removeClass("my-temp");
-  // my hope is that these gymnastics mean we don't have to constantly re-render the shadows in the cache.
-  // but who knows?
+  // The class .my-temp is used to ensure that whenever a DOM element and its
+  // child is marked for blurring, we only blur the higher-level one.
+
+  // my hope is that these gymnastics stop the browser from constantly re-rendering
+  // the shadows in the cache.
   $(".censorship-blur:not(.new-censorship-blur)").removeClass("censorship-blur");
   $(".new-censorship-blur:not(.censorship-blur)").addClass("censorship-blur");
   $(".new-censorship-blur").removeClass("new-censorship-blur");
@@ -51,9 +71,12 @@ function makeRegex(callback) {
   chrome.storage.sync.get("blacklist", function(items) {
     var bannedWords = items["blacklist"];
     var escapedBannedWords = $.map(bannedWords, function(val, key) {
-      return "\\b" + escapeRegExp(key) + "\\b";
+      return /*"\\b" + */escapeRegExp(key)/* + "\\b"*/;
     });
-    var regexString = escapedBannedWords.join("|");
+    var regexString = escapedBannedWords.map(function(elem, index){
+      return makeRegexCharactersOkay(elem);
+    }).join("|");
+    console.log(regexString);
     if (regexString == "") {
       // Rejects everything
       regexString = "[^\\w\\W]";
