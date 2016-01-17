@@ -4,16 +4,16 @@ var input = document.getElementById("input");
 function addWord() {
   var word = input.value;
   // Get the stored blacklist
-  chrome.storage.sync.get("triggers", function(items) {
-  	var savedTriggers = items["triggers"];
+  chrome.storage.sync.get("blacklist", function(items) {
+  	var blacklist = items["blacklist"];
   	// Add word to our copy of the blacklist
-    if (savedTriggers) {
-  		savedTriggers[word] = true;
+    if (blacklist) {
+  		blacklist[word] = true;
   	} else {
-  		savedTriggers = {word: true};
+  		blacklist = {word: true};
   	}
     // Set the blacklist with our modified copy
-  	chrome.storage.sync.set({"triggers": savedTriggers}, function(){
+  	chrome.storage.sync.set({"blacklist": blacklist}, function(){
       rerender();
       $("#response").html("Saved word " + word);
       input.value = "";
@@ -34,11 +34,11 @@ $("#input").keyup(function(e){
 $("#triggers").click(function(e){
 	if ($(event.target).is("li")) {
 		var word = event.target.innerHTML;
-		chrome.storage.sync.get("triggers", function(items){
-			var savedTriggers = items["triggers"];
-			if (savedTriggers) {
-				delete savedTriggers[word];
-				chrome.storage.sync.set({"triggers":savedTriggers}, function(){
+		chrome.storage.sync.get("blacklist", function(items){
+			var blacklist = items["blacklist"];
+			if (blacklist) {
+				delete blacklist[word];
+				chrome.storage.sync.set({"blacklist":blacklist}, function(){
 					rerender();
 					$("#response").html("Removed word " + word);
 				});
@@ -50,9 +50,9 @@ $("#triggers").click(function(e){
 // Shows a list of words generated from the blacklist.
 function rerender() {
   var list = $("<ul/>");
-  chrome.storage.sync.get("triggers", function(items){
-  	if (items["triggers"] && items["triggers"].length !== 0) {
-  	  $.each(items["triggers"], function(currentValue, trueOrFalse){
+  chrome.storage.sync.get("blacklist", function(items){
+  	if (items["blacklist"] && items["blacklist"].length !== 0) {
+  	  $.each(items["blacklist"], function(currentValue, trueOrFalse){
    		  $("<li/>").html(currentValue).appendTo(list);
   	  });
   	  $("#triggers").html(list);
