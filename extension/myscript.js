@@ -1,4 +1,4 @@
-var semanticModules = "div, blockquote, sub, sup, p, li, td, strong, span, h1, h2, h3, h4, h5, h6, a, button";
+var semanticModules = "div, blockquote, sub, sup, p, li, td, strong, i, b, span, h1, h2, h3, h4, h5, h6, a, button";
 
 // Escape bad characters from user input.
 function escapeRegExp(str) {
@@ -71,7 +71,7 @@ function makeRegex(callback) {
   chrome.storage.sync.get("blacklist", function(items) {
     var bannedWords = items["blacklist"];
     var escapedBannedWords = $.map(bannedWords, function(val, key) {
-      return /*"\\b" + */escapeRegExp(key)/* + "\\b"*/;
+      return "\\b" + escapeRegExp(key) + "\\b";
     });
     var regexString = escapedBannedWords.map(function(elem, index){
       return makeRegexCharactersOkay(elem);
