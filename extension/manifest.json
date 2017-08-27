@@ -24,7 +24,7 @@
       "38": "images/icon38.png"
     },
     "default_title": "Blur It Out Settings",
-    "default_popup": "popup.html"
+    "default_popup": "new_popup.html"
   },
   "manifest_version": 2
 }

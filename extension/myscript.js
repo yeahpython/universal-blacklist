@@ -1,4 +1,4 @@
-var semanticModules = "div, blockquote, sub, sup, p, li, td, strong, i, b, span, h1, h2, h3, h4, h5, h6, a, button";
+var semanticModules = "cite, time, div, blockquote, sub, em, sup, p, li, td, strong, i, b, span, h1, h2, h3, h4, h5, h6, a, button";
 
 // Escape bad characters from user input.
 function escapeRegExp(str) {
@@ -42,7 +42,10 @@ function enforceCensorship() {
     })
     .addClass("my-temp")
     .filter(":not(.my-temp .my-temp)")
+    .parent()
     .addClass("new-censorship-blur");
+    /*.addClass("my-temp");
+    $("* > .my-temp").addClass("new-censorship-blur");*/
   $(".my-temp").removeClass("my-temp");
   // The class .my-temp is used to ensure that whenever a DOM element and its
   // child is marked for blurring, we only blur the higher-level one.
@@ -68,15 +71,21 @@ function censorshipLoop() {
 
 // Assembles a regex from stored blacklist
 function makeRegex(callback) {
-  chrome.storage.sync.get("blacklist", function(items) {
+  chrome.storage.local.get(["blacklist", "enabled"], function(items) {
     var bannedWords = items["blacklist"];
-    var escapedBannedWords = $.map(bannedWords, function(val, key) {
-      return "\\b" + escapeRegExp(key) + "\\b";
-    });
-    var regexString = escapedBannedWords.map(function(elem, index){
-      return makeRegexCharactersOkay(elem);
-    }).join("|");
-    console.log(regexString);
+    if (items["enabled"] == false) {
+      // Rejects everything
+      regexString = "";
+    } else {
+	    var escapedBannedWords = $.map(bannedWords, function(val, key) {
+	      return /*"\\b" + */escapeRegExp(key)/* + "\\b"*/;
+	    });
+	    var regexString = escapedBannedWords.map(function(elem, index){
+	      return makeRegexCharactersOkay(elem);
+	    }).join("|");
+	    console.log(regexString);
+	}
+
     if (regexString == "") {
       // Rejects everything
       regexString = "[^\\w\\W]";

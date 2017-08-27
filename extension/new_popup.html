@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+ul {
+  margin-left: 19px;
+  margin-bottom:0px;
+  margin-top:0px;
+  padding: 0px;
+}
+li {
+  padding-left:4px;
+}
+#triggers li:hover {
+  list-style-image: url("images/cross.png");
+  cursor: pointer;
+  color: red;
+}
+#triggers {
+  overflow:scroll;
+}
+#container{
+  height:230px;
+  width:200px;
+}
+#list{
+}
+#input_lead{
+  padding-left:0px;
+}
+#toggle{
+  padding:15px;
+  width:200px;
+}
+#input{
+  width:175px;
+  padding:10px;
+  margin:0px;
+  margin-top:10px;
+  margin-bottom:5px;
+}
+</style>
+</head>
+<body>
+<div id = "container">
+<button id = "toggle"></button>
+<div id = "list">
+  <input id = "input" placeholder="Add word">
+  Blacklist:
+  <div id = "triggers"></div>
+</div>
+</div>
+  <script type="text/javascript" src = "third-party/jquery-1.12.0.min.js"></script>
+  <script type = "text/javascript" src = "new_popup.js"></script>
+</body>
+</html>

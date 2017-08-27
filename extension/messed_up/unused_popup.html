@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+/*#response {
+  color: red;
+}
+ul {
+  margin: 8px;
+  padding: 0;
+}
+#triggers li:hover {
+  list-style-image: url("images/cross.png");
+  cursor: pointer;
+  color: red;
+}*/
+#container {
+  width: 200px;
+  height: 200px;
+}
+#toggle, #options{
+  width: 150px;
+  margin-left:auto;
+  margin-right:auto;
+  display:block;
+  border:1px solid black;
+  padding: 20px;
+  margin-bottom:10px;
+  cursor:pointer;
+}
+
+#toggle:hover, #options:hover{
+  background-color:#ddd;
+}
+
+</style>
+</head>
+<body>
+<!-- <div id = "list">
+  Blacklist:
+  <ul id = "triggers"></ul>
+  <input id = "input" placeholder="Add word"><br>
+</div> -->
+<!--   <button id = "add" style="margin-top: 5px">Add word</button><br>
+ -->
+ <div id = "container">
+ <div id = "toggle"></div>
+ <div id = "options">Edit blacklist</div>
+</div>
+
+  <div id = "response"></div>
+  <script type="text/javascript" src = "third-party/jquery-1.12.0.min.js"></script>
+  <script type = "text/javascript" src = "popup.js"></script>
+</body>
+</html>

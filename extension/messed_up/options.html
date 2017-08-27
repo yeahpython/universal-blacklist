@@ -11,16 +11,22 @@ ul {
 }
 #triggers li:hover {
   list-style-image: url("images/cross.png");
+  cursor: pointer;
+  color: red;
 }
 </style>
 </head>
 <body>
-Hidden:
+<div id = "list">
+  Blacklist:
   <ul id = "triggers"></ul>
-  <input id = "input">
-  <button id = "add">Add word</button>
+  <input id = "input" placeholder="Add word"><br>
+</div>
+<!--   <button id = "add" style="margin-top: 5px">Add word</button><br>
+ -->
+ <button id = "toggle" style="margin-top: 5px"></button>
   <div id = "response"></div>
   <script type="text/javascript" src = "third-party/jquery-1.12.0.min.js"></script>
-  <script type = "text/javascript" src = "popup.js"></script>
+  <script type = "text/javascript" src = "options.js"></script>
 </body>
 </html>

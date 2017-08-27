@@ -8,6 +8,22 @@
 	color:black !important;
 }*/
 
-.censorship-blur:not(:hover){
+/*.censorship-blur:not(:hover){
 	-webkit-filter: blur(3px);
+}*/
+.censorship-blur, .censorship-blur *{
+	-webkit-filter: invert(50%) opacity(10%);
+	background-color: #888 !important;
 }
+/* quick hack to also affect children */
+/*
+.censorship-blur, .censorship-blur *{
+	color: #eee !important;
+	background-color: #eee !important;
+	text-shadow: none !important;
+}
+
+.censorship-blur img, .censorship-blur a{
+	visibility: hidden;
+}
+*/
