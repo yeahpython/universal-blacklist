@@ -1,6 +1,6 @@
 {
-  "name": "Blur It Out",
-  "description": "A simple extension that blurs out words you don't like",
+  "name": "Shut Up, Internet.",
+  "description": "Censor out clickbait, distraction and sensationalism from your browsing experience with this universal keyword blocker.",
   "version": "1.0",
   "permissions": [
     "storage",
@@ -23,7 +23,7 @@
       "19": "images/icon19.png",
       "38": "images/icon38.png"
     },
-    "default_title": "Blur It Out Settings",
+    "default_title": "Settings",
     "default_popup": "new_popup.html"
   },
   "manifest_version": 2
