@@ -18,7 +18,7 @@ function makeRegexCharactersOkay(string){
           result += "\\u" + (("000"+hex).slice(-4));
         }
     }
-    console.log(result);
+    //console.log(result);
     return result;
 }
 
@@ -29,11 +29,62 @@ var re;
 var regexNeedsUpdate = true;
 
 
+
+
+function getFeedlikeAncestor(node){
+  var parents = $(node).parents()
+  var siblingness_counts = parents.map(function(index,elem){
+    var myclass = $(elem).attr("class")
+    // console.log(myclass)
+    if (myclass === undefined){
+      // console.log("!!!")
+      my_class_split = [];
+    } else {
+      my_class_split = myclass.split(' ')
+    }
+    // return number of siblings with some class in common
+    return $(elem).siblings().filter(function(index, sib){
+      // Function returns true iff sibling has a class in common with the original.
+      // console.log(my_class_split);
+      var $sib = $(sib)
+      for (var i = 0; i < my_class_split.length; i++){
+        // TODO: remove earlier
+        if ((my_class_split[i] !== "") && (my_class_split !== "censorship-blur") && $sib.hasClass(my_class_split[i])) {
+          return true;
+        }
+      }
+      return false;
+    }).length;
+  }); //n_siblings
+
+  var best_count = -1;
+  var best_index = -1;
+  console.log(siblingness_counts)
+  console.log(parents)
+  for (var i = 0; i < siblingness_counts.length; i++) {
+    if (siblingness_counts[i] > best_count) {
+      best_count = siblingness_counts[i];
+      best_index = i;
+    }
+  }
+  if (best_index < 0) {
+    console.log("best_index < 0");
+    chosen_dom_element = node
+  } else {
+    chosen_dom_element = parents[best_index]
+  }
+  return $(chosen_dom_element);
+}
+
+/*$("div").click(function(e){
+  getFeedlikeAncestor(e.target).css("background-color", "red");
+})*/
+
 // Blurs out anything that contains a text node containing a blacklisted word.
 // Tries not to remove and add the .censorship-blur class unnecessarily, instead adding
 // a dummy class
 function enforceCensorship() {
-  var $newblur = $(semanticModules)
+  var newblur = $(semanticModules)
     .filter(function(){
       return re.test($(this).contents()
         .filter(function() {
@@ -42,8 +93,12 @@ function enforceCensorship() {
     })
     .addClass("my-temp")
     .filter(":not(.my-temp .my-temp)")
-    .parent()
-    .addClass("new-censorship-blur");
+    .map(function(index, elem){
+      var hmm = getFeedlikeAncestor(elem)
+      hmm.addClass("new-censorship-blur")
+      return hmm;
+    })
+    //$(newblur).addClass("new-censorship-blur");
     /*.addClass("my-temp");
     $("* > .my-temp").addClass("new-censorship-blur");*/
   $(".my-temp").removeClass("my-temp");
@@ -83,7 +138,7 @@ function makeRegex(callback) {
 	    var regexString = escapedBannedWords.map(function(elem, index){
 	      return makeRegexCharactersOkay(elem);
 	    }).join("|");
-	    console.log(regexString);
+	    // console.log(regexString);
 	}
 
     if (regexString == "") {

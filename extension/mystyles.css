@@ -12,8 +12,9 @@
 	-webkit-filter: blur(3px);
 }*/
 .censorship-blur, .censorship-blur *{
-	-webkit-filter: invert(50%) opacity(10%);
-	background-color: #888 !important;
+	/*-webkit-filter: invert(50%) opacity(10%);
+	background-color: #888 !important;*/
+	display: none;
 }
 /* quick hack to also affect children */
 /*

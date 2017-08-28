@@ -18,12 +18,14 @@ li {
 }
 #triggers {
   overflow:scroll;
+  max-height:100px;
 }
 #container{
-  height:230px;
+  height:210px;
   width:200px;
 }
 #list{
+  height:165px;
 }
 #input_lead{
   padding-left:0px;
@@ -31,24 +33,25 @@ li {
 #toggle{
   padding:15px;
   width:200px;
+  margin-bottom:10px;
 }
 #input{
   width:175px;
   padding:10px;
   margin:0px;
-  margin-top:10px;
+  /*margin-top:5px;*/
   margin-bottom:5px;
 }
 </style>
 </head>
 <body>
 <div id = "container">
-<button id = "toggle"></button>
-<div id = "list">
-  <input id = "input" placeholder="Add word">
-  Blacklist:
-  <div id = "triggers"></div>
-</div>
+  <div id = "list">
+    <input id = "input" placeholder="Add word">
+    Blacklist:
+    <div id = "triggers"></div>
+  </div>
+  <button id = "toggle"></button>
 </div>
   <script type="text/javascript" src = "third-party/jquery-1.12.0.min.js"></script>
   <script type = "text/javascript" src = "new_popup.js"></script>
