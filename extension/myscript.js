@@ -18,7 +18,6 @@ function makeRegexCharactersOkay(string){
           result += "\\u" + (("000"+hex).slice(-4));
         }
     }
-    //console.log(result);
     return result;
 }
 
@@ -35,9 +34,7 @@ function getFeedlikeAncestor(node){
   var parents = $(node).parents()
   var siblingness_counts = parents.map(function(index,elem){
     var myclass = $(elem).attr("class")
-    // console.log(myclass)
     if (myclass === undefined){
-      // console.log("!!!")
       my_class_split = [];
     } else {
       my_class_split = myclass.split(' ')
@@ -45,7 +42,6 @@ function getFeedlikeAncestor(node){
     // return number of siblings with some class in common
     return $(elem).siblings().filter(function(index, sib){
       // Function returns true iff sibling has a class in common with the original.
-      // console.log(my_class_split);
       var $sib = $(sib)
       for (var i = 0; i < my_class_split.length; i++){
         // TODO: remove earlier
@@ -59,8 +55,6 @@ function getFeedlikeAncestor(node){
 
   var best_count = -1;
   var best_index = -1;
-  console.log(siblingness_counts)
-  console.log(parents)
   for (var i = 0; i < siblingness_counts.length; i++) {
     if (siblingness_counts[i] > best_count) {
       best_count = siblingness_counts[i];
@@ -68,7 +62,7 @@ function getFeedlikeAncestor(node){
     }
   }
   if (best_index < 0) {
-    console.log("best_index < 0");
+    console.log("Uh oh: best_index < 0");
     chosen_dom_element = node
   } else {
     chosen_dom_element = parents[best_index]
@@ -80,36 +74,54 @@ function getFeedlikeAncestor(node){
   getFeedlikeAncestor(e.target).css("background-color", "red");
 })*/
 
+var disabled = false;
+
 // Blurs out anything that contains a text node containing a blacklisted word.
 // Tries not to remove and add the .censorship-blur class unnecessarily, instead adding
 // a dummy class
 function enforceCensorship() {
-  var newblur = $(semanticModules)
-    .filter(function(){
-      return re.test($(this).contents()
-        .filter(function() {
-          return this.nodeType === 3; //Node.TEXT_NODE
-        }).text());
-    })
-    .addClass("my-temp")
-    .filter(":not(.my-temp .my-temp)")
-    .map(function(index, elem){
-      var hmm = getFeedlikeAncestor(elem)
-      hmm.addClass("new-censorship-blur")
-      return hmm;
-    })
-    //$(newblur).addClass("new-censorship-blur");
-    /*.addClass("my-temp");
-    $("* > .my-temp").addClass("new-censorship-blur");*/
-  $(".my-temp").removeClass("my-temp");
-  // The class .my-temp is used to ensure that whenever a DOM element and its
-  // child is marked for blurring, we only blur the higher-level one.
+  var enabled_everywhere;
+  chrome.storage.local.get(["enabled"], function(items) {
+    if (items["enabled"] == undefined) {
+      enabled_everywhere = true;
+    } else {
+      enabled_everywhere = items["enabled"];
+    }
 
-  // my hope is that these gymnastics stop the browser from constantly re-rendering
-  // the shadows in the cache.
-  $(".censorship-blur:not(.new-censorship-blur)").removeClass("censorship-blur");
-  $(".new-censorship-blur:not(.censorship-blur)").addClass("censorship-blur");
-  $(".new-censorship-blur").removeClass("new-censorship-blur");
+    if (disabled || enabled_everywhere == false) {
+      $(".censorship-blur").removeClass("censorship-blur");
+      return;
+    } else {
+      console.log(enabled_everywhere);
+      var zeros = $(semanticModules)
+        .filter(function(){
+          return re.test($(this).contents()
+            .filter(function() {
+              return this.nodeType === 3; //Node.TEXT_NODE
+            }).text());
+        })
+        .addClass("my-temp")
+        .filter(":not(.my-temp .my-temp)")
+        .map(function(index, elem){
+          getFeedlikeAncestor(elem).addClass("new-censorship-blur")
+          return 0;
+        })
+      var count = zeros.length;
+      // This sends a messages to the background script, which can see which tab ID this is.
+      // The background script then makes an update to storage that triggers a change in the icon.
+      chrome.runtime.sendMessage({"count": count });
+
+      $(".my-temp").removeClass("my-temp");
+      // The class .my-temp is used to ensure that whenever a DOM element and its
+      // child is marked for blurring, we only blur the higher-level one.
+
+      // my hope is that these gymnastics stop the browser from constantly re-rendering
+      // the shadows in the cache.
+      $(".censorship-blur:not(.new-censorship-blur)").removeClass("censorship-blur");
+      $(".new-censorship-blur:not(.censorship-blur)").addClass("censorship-blur");
+      $(".new-censorship-blur").removeClass("new-censorship-blur");
+    }
+  });
 }
 
 // Search page for occurences of words on the blacklist and blurs out certain elements that contain them.
@@ -126,20 +138,19 @@ function censorshipLoop() {
 
 // Assembles a regex from stored blacklist
 function makeRegex(callback) {
-  chrome.storage.local.get(["blacklist", "enabled"], function(items) {
+  chrome.storage.local.get(["blacklist"/*, "enabled"*/], function(items) {
     var bannedWords = items["blacklist"];
-    if (items["enabled"] == false) {
-      // Rejects everything
-      regexString = "";
-    } else {
+    // if (items["enabled"] == false) {
+    //   // Rejects everything
+    //   regexString = "";
+    // } else {
 	    var escapedBannedWords = $.map(bannedWords, function(val, key) {
-	      return /*"\\b" + */escapeRegExp(key)/* + "\\b"*/;
+	      return "\\b" + escapeRegExp(key) + "\\b";
 	    });
 	    var regexString = escapedBannedWords.map(function(elem, index){
 	      return makeRegexCharactersOkay(elem);
 	    }).join("|");
-	    // console.log(regexString);
-	}
+	// }
 
     if (regexString == "") {
       // Rejects everything
@@ -150,6 +161,12 @@ function makeRegex(callback) {
     callback();
   });
 }
+
+chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
+  if (msg.action == 'toggle_disable') {
+    disabled = true;
+  }
+});
 
 // Initiates censorship loop.
 censorshipLoop();

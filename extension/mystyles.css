@@ -2,20 +2,52 @@
 .censorship-blur, .censorship-blur *{
 	color: rgba(0,0,0,0.0) !important;
 	text-shadow: 0 0 8px rgba(0,0,0,0.5) !important;
-}
+}*/
 
-::selection{
+/*::selection{
 	color:black !important;
 }*/
 
 /*.censorship-blur:not(:hover){
 	-webkit-filter: blur(3px);
 }*/
-.censorship-blur, .censorship-blur *{
-	/*-webkit-filter: invert(50%) opacity(10%);
-	background-color: #888 !important;*/
-	display: none;
+
+.censorship-blur, .censorship-blur * {
+	-webkit-filter: invert(50%) opacity(5%);
+	background-color: #888 !important;
+	/*display: none;*/
+	/*visibility: hidden;*/
+	/*position: relative;*/
+	/*max-height:0px;
+	line-height: 0px;
+	font-size:0px !important;*/
 }
+
+/*.censorship-blur *{
+	visibility:hidden;
+	content:"hello";
+	position:relative;
+}
+
+.censorship-blur *::after{
+	visibility: visible;
+	position:absolute;
+	display:block;
+	top:0px;
+	left:0px;
+	content:".";
+}*/
+
+/*.censorship-blur * {
+	max-height:1px;
+	line-height: 0px
+}
+
+.censorship-blur {
+	line-height:0px;
+	max-height:1px;
+}*/
+
 /* quick hack to also affect children */
 /*
 .censorship-blur, .censorship-blur *{
@@ -27,4 +59,3 @@
 .censorship-blur img, .censorship-blur a{
 	visibility: hidden;
 }
-*/

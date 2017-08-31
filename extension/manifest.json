@@ -1,7 +1,7 @@
 {
-  "name": "Shut Up, Internet.",
-  "description": "Censor out clickbait, distraction and sensationalism from your browsing experience with this universal keyword blocker.",
-  "version": "1.0",
+  "name": "A Quieter Internet",
+  "description": "Remove clickbait, distraction and sensationalism from your browsing experience with this universal keyword blocker.",
+  "version": "1.1",
   "permissions": [
     "storage",
     "https://*/*",
@@ -15,6 +15,9 @@
       "run_at": "document_end"
     }
   ],
+  "background": {
+    "scripts":["background.js"]
+  },
   "icons": {
     "128": "images/icon128.png"
     },
@@ -23,8 +26,8 @@
       "19": "images/icon19.png",
       "38": "images/icon38.png"
     },
-    "default_title": "Settings",
-    "default_popup": "new_popup.html"
+    "default_title": "A Quieter Internet",
+    "default_popup": "browser_action.html"
   },
   "manifest_version": 2
 }
