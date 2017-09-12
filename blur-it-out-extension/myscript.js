@@ -129,7 +129,6 @@ function enforceCensorship() {
           // // console.log(ancestor);
           // return 0;
         });
-      console.log($ancestors.length);
       // This sends a messages to the background script, which can see which tab ID this is.
       // The background script then makes an update to storage that triggers a change in the icon.
       chrome.runtime.sendMessage({"count": $ancestors.length});
