@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+ul {
+  margin-left: 19px;
+  margin-bottom:0px;
+  margin-top:0px;
+  padding: 0px;
+}
+li {
+  padding-left:4px;
+}
+#triggers li:hover {
+  list-style-image: url("images/cross.png");
+  cursor: pointer;
+  color: red;
+}
+#triggers {
+  overflow:scroll;
+  max-height:100px;
+}
+#container{
+  height:210px;
+  width:200px;
+}
+#list{
+  height:165px;
+}
+#input_lead{
+  padding-left:0px;
+}
+#toggle, #temp_toggle{
+  padding:15px;
+  width:200px;
+  margin-bottom:10px;
+}
+#input{
+  width:175px;
+  padding:10px;
+  margin:0px;
+  /*margin-top:5px;*/
+  margin-bottom:5px;
+}
+</style>
+</head>
+<body>
+<div id = "container">
+  <div id = "list">
+    <input id = "input" placeholder="Add word">
+    Blacklist:
+    <div id = "triggers"></div>
+  </div>
+  <button id = "toggle"></button><br>
+  <button id = "temp_toggle"></button>
+</div>
+  <script type="text/javascript" src = "third-party/jquery-1.12.0.min.js"></script>
+  <script type = "text/javascript" src = "browser_action.js"></script>
+</body>
+</html>

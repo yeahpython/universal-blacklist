@@ -1,0 +1,50 @@
+/*
+.censorship-blur, .censorship-blur *{
+	color: rgba(0,0,0,0.0) !important;
+	text-shadow: 0 0 8px rgba(0,0,0,0.5) !important;
+}*/
+
+/*::selection{
+	color:black !important;
+}*/
+
+.a-quieter-internet-gray:not(:hover){
+	-webkit-filter: blur(10px);
+}
+
+/*.censorship-blur *{
+	visibility:hidden;
+	content:"hello";
+	position:relative;
+}
+
+.censorship-blur *::after{
+	visibility: visible;
+	position:absolute;
+	display:block;
+	top:0px;
+	left:0px;
+	content:".";
+}*/
+
+/*.censorship-blur * {
+	max-height:1px;
+	line-height: 0px
+}
+
+.censorship-blur {
+	line-height:0px;
+	max-height:1px;
+}*/
+
+/* quick hack to also affect children */
+/*
+.censorship-blur, .censorship-blur *{
+	color: #eee !important;
+	background-color: #eee !important;
+	text-shadow: none !important;
+}
+
+.censorship-blur img, .censorship-blur a{
+	visibility: hidden;
+}

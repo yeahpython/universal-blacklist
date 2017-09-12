@@ -1,0 +1,33 @@
+{
+  "name": "A Quieter Internet",
+  "description": "Remove clickbait, distraction and sensationalism with this universal keyword blocker.",
+  "version": "1.2",
+  "permissions": [
+    "storage",
+    "https://*/*",
+    "http://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://*/*", "http://*/*"],
+      "css": ["mystyles.css"],
+      "js": ["third-party/jquery-1.12.0.min.js", "myscript.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "background": {
+    "scripts":["background.js"]
+  },
+  "icons": {
+    "128": "images/icon128.png"
+    },
+  "browser_action": {
+    "default_icon": {
+      "19": "images/icon19.png",
+      "38": "images/icon38.png"
+    },
+    "default_title": "A Quieter Internet",
+    "default_popup": "browser_action.html"
+  },
+  "manifest_version": 2
+}
