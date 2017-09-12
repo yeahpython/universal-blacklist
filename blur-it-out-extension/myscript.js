@@ -109,7 +109,7 @@ function enforceCensorship() {
       $(".a-quieter-internet-gray").removeClass("a-quieter-internet-gray");
       return;
     } else {
-      var zeros = $("*").not("html, head, body, script, style, meta, title, link, input, ul, hr, iframe, svg, g, path, img, polygon").not(":hidden")
+      var $ancestors = $("*").not("html, head, body, script, style, meta, title, link, input, ul, hr, iframe, svg, g, path, img, polygon").not(":hidden")
         .filter(function(){
           return re.test($(this).contents()
             .filter(function() {
@@ -119,25 +119,26 @@ function enforceCensorship() {
         // .addClass("my-temp")
         // .filter(":not(.my-temp .my-temp)")
         .map(function(index, elem){
+          // console.log(elem);
           var ancestor = getFeedlikeAncestor(elem);
-          ancestor.addClass("new-a-quieter-internet-gray");
+          // console.log(elem);
           // console.log(ancestor);
-          return 0;
-        })
-      var count = zeros.length;
+          // ancestor.addClass("a-quieter-internet-gray");
+          return ancestor.get();
+          // ancestor.addClass("new-a-quieter-internet-gray");
+          // // console.log(ancestor);
+          // return 0;
+        });
+      console.log($ancestors.length);
       // This sends a messages to the background script, which can see which tab ID this is.
       // The background script then makes an update to storage that triggers a change in the icon.
-      chrome.runtime.sendMessage({"count": count });
+      chrome.runtime.sendMessage({"count": $ancestors.length});
 
-      // $(".my-temp").removeClass("my-temp");
-      // The class .my-temp is used to ensure that whenever a DOM element and its
-      // child is marked for blurring, we only blur the higher-level one.
 
       // my hope is that these gymnastics stop the browser from constantly re-rendering
       // the shadows in the cache.
-      $(".a-quieter-internet-gray:not(.new-a-quieter-internet-gray)").removeClass("a-quieter-internet-gray");
-      $(".new-a-quieter-internet-gray:not(.a-quieter-internet-gray)").addClass("a-quieter-internet-gray");
-      $(".new-a-quieter-internet-gray").removeClass("new-a-quieter-internet-gray");
+      $(".a-quieter-internet-gray").not($ancestors).removeClass("a-quieter-internet-gray");
+      $ancestors.not(".a-quieter-internet-gray").addClass("a-quieter-internet-gray");
     }
   });
 }
