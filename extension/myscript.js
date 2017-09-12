@@ -1,4 +1,6 @@
-var semanticModules = "cite, time, div, blockquote, sub, em, sup, p, li, td, strong, i, b, span, h1, h2, h3, h4, h5, h6, a, button";
+// var semanticModules = "ytd-grid-video-renderer, cite, time, div, blockquote, sub, em, sup, p, li, td, strong, i, b, span, h1, h2, h3, h4, h5, h6, a, button";
+
+var min_feed_neighbors = 3;
 
 // Escape bad characters from user input.
 function escapeRegExp(str) {
@@ -31,35 +33,50 @@ var regexNeedsUpdate = true;
 
 
 function getFeedlikeAncestor(node){
-  var parents = $(node).parents()
+  // console.log(node);
+  // parents ordered by document order
+  var parents = $(node).add($(node).parents());
   var siblingness_counts = parents.map(function(index,elem){
-    var myclass = $(elem).attr("class")
+    var myclass = $(elem).attr("class");
+    var num_children = $(elem).children().length;
     if (myclass === undefined){
       my_class_split = [];
     } else {
       my_class_split = myclass.split(' ')
     }
-    // return number of siblings with some class in common
-    return $(elem).siblings().filter(function(index, sib){
+
+    if ($(elem).prop("tagName") == "LI") {
+      return min_feed_neighbors + 1; // Generic "big" number
+    }
+
+    // three siblings is good enough to be a list.
+    return Math.min($(elem).siblings().not(":hidden").filter(function(index, sib){
       // Function returns true iff sibling has a class in common with the original.
       var $sib = $(sib)
+
+      // hacking to just compare number of children
+      // return $sib.children().length == num_children;
       for (var i = 0; i < my_class_split.length; i++){
         // TODO: remove earlier
-        if ((my_class_split[i] !== "") && (my_class_split !== "censorship-blur") && $sib.hasClass(my_class_split[i])) {
+        if ((my_class_split[i] !== "") && (my_class_split !== "a-quieter-internet-gray") && $sib.hasClass(my_class_split[i])) {
           return true;
         }
       }
       return false;
-    }).length;
+    }).length, min_feed_neighbors);
   }); //n_siblings
 
   var best_count = -1;
   var best_index = -1;
-  for (var i = 0; i < siblingness_counts.length; i++) {
+  // console.log(siblingness_counts);
+
+  // Note, parents were ordered by document order
+  for (var i = siblingness_counts.length - 1; i >= 0; i--) {
     if (siblingness_counts[i] > best_count) {
       best_count = siblingness_counts[i];
       best_index = i;
     }
+    // console.log(best_index);
   }
   if (best_index < 0) {
     console.log("Uh oh: best_index < 0");
@@ -77,7 +94,7 @@ function getFeedlikeAncestor(node){
 var disabled = false;
 
 // Blurs out anything that contains a text node containing a blacklisted word.
-// Tries not to remove and add the .censorship-blur class unnecessarily, instead adding
+// Tries not to remove and add the .a-quieter-internet-gray class unnecessarily, instead adding
 // a dummy class
 function enforceCensorship() {
   var enabled_everywhere;
@@ -89,21 +106,22 @@ function enforceCensorship() {
     }
 
     if (disabled || enabled_everywhere == false) {
-      $(".censorship-blur").removeClass("censorship-blur");
+      $(".a-quieter-internet-gray").removeClass("a-quieter-internet-gray");
       return;
     } else {
-      console.log(enabled_everywhere);
-      var zeros = $(semanticModules)
+      var zeros = $("*").not("html, head, body, script, style, meta, title, link, input, ul, hr, iframe, svg, g, path, img, polygon").not(":hidden")
         .filter(function(){
           return re.test($(this).contents()
             .filter(function() {
               return this.nodeType === 3; //Node.TEXT_NODE
             }).text());
         })
-        .addClass("my-temp")
-        .filter(":not(.my-temp .my-temp)")
+        // .addClass("my-temp")
+        // .filter(":not(.my-temp .my-temp)")
         .map(function(index, elem){
-          getFeedlikeAncestor(elem).addClass("new-censorship-blur")
+          var ancestor = getFeedlikeAncestor(elem);
+          ancestor.addClass("new-a-quieter-internet-gray");
+          // console.log(ancestor);
           return 0;
         })
       var count = zeros.length;
@@ -111,15 +129,15 @@ function enforceCensorship() {
       // The background script then makes an update to storage that triggers a change in the icon.
       chrome.runtime.sendMessage({"count": count });
 
-      $(".my-temp").removeClass("my-temp");
+      // $(".my-temp").removeClass("my-temp");
       // The class .my-temp is used to ensure that whenever a DOM element and its
       // child is marked for blurring, we only blur the higher-level one.
 
       // my hope is that these gymnastics stop the browser from constantly re-rendering
       // the shadows in the cache.
-      $(".censorship-blur:not(.new-censorship-blur)").removeClass("censorship-blur");
-      $(".new-censorship-blur:not(.censorship-blur)").addClass("censorship-blur");
-      $(".new-censorship-blur").removeClass("new-censorship-blur");
+      $(".a-quieter-internet-gray:not(.new-a-quieter-internet-gray)").removeClass("a-quieter-internet-gray");
+      $(".new-a-quieter-internet-gray:not(.a-quieter-internet-gray)").addClass("a-quieter-internet-gray");
+      $(".new-a-quieter-internet-gray").removeClass("new-a-quieter-internet-gray");
     }
   });
 }
@@ -138,28 +156,32 @@ function censorshipLoop() {
 
 // Assembles a regex from stored blacklist
 function makeRegex(callback) {
-  chrome.storage.local.get(["blacklist"/*, "enabled"*/], function(items) {
-    var bannedWords = items["blacklist"];
-    // if (items["enabled"] == false) {
-    //   // Rejects everything
-    //   regexString = "";
-    // } else {
-	    var escapedBannedWords = $.map(bannedWords, function(val, key) {
-	      return "\\b" + escapeRegExp(key) + "\\b";
-	    });
-	    var regexString = escapedBannedWords.map(function(elem, index){
-	      return makeRegexCharactersOkay(elem);
-	    }).join("|");
-	// }
+  try {
+    chrome.storage.local.get(["blacklist"/*, "enabled"*/], function(items) {
+      var bannedWords = items["blacklist"];
+      // if (items["enabled"] == false) {
+      //   // Rejects everything
+      //   regexString = "";
+      // } else {
+  	    var escapedBannedWords = $.map(bannedWords, function(val, key) {
+  	      return "\\b" + escapeRegExp(key) + "\\b";
+  	    });
+  	    var regexString = escapedBannedWords.map(function(elem, index){
+  	      return makeRegexCharactersOkay(elem);
+  	    }).join("|");
+  	// }
 
-    if (regexString == "") {
-      // Rejects everything
-      regexString = "[^\\w\\W]";
-    }
-    re = new RegExp(regexString, "i");
-    regexNeedsUpdate = false;
-    callback();
-  });
+      if (regexString == "") {
+        // Rejects everything
+        regexString = "[^\\w\\W]";
+      }
+      re = new RegExp(regexString, "i");
+      regexNeedsUpdate = false;
+      callback();
+    });
+  } catch (err) {
+    console.log("Ran into error while making regex:" + err.message);
+  }
 }
 
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {

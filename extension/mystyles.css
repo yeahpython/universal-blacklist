@@ -12,8 +12,8 @@
 	-webkit-filter: blur(3px);
 }*/
 
-.censorship-blur, .censorship-blur * {
-	-webkit-filter: invert(50%) opacity(5%);
+.a-quieter-internet-gray, .a-quieter-internet-gray * {
+	-webkit-filter: invert(50%) brightness(190%)/*opacity(5%)*/;
 	background-color: #888 !important;
 	/*display: none;*/
 	/*visibility: hidden;*/
