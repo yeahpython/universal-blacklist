@@ -58,7 +58,7 @@ function getFeedlikeAncestor(node){
       // return $sib.children().length == num_children;
       for (var i = 0; i < my_class_split.length; i++){
         // TODO: remove earlier
-        if ((my_class_split[i] !== "") && (my_class_split !== "a-quieter-internet-gray") && $sib.hasClass(my_class_split[i])) {
+        if ((my_class_split[i] !== "") && (my_class_split !== "blur-it-out") && $sib.hasClass(my_class_split[i])) {
           return true;
         }
       }
@@ -94,7 +94,7 @@ function getFeedlikeAncestor(node){
 var disabled = false;
 
 // Blurs out anything that contains a text node containing a blacklisted word.
-// Tries not to remove and add the .a-quieter-internet-gray class unnecessarily, instead adding
+// Tries not to remove and add the .blur-it-out class unnecessarily, instead adding
 // a dummy class
 function enforceCensorship() {
   var enabled_everywhere;
@@ -106,7 +106,7 @@ function enforceCensorship() {
     }
 
     if (disabled || enabled_everywhere == false) {
-      $(".a-quieter-internet-gray").removeClass("a-quieter-internet-gray");
+      $(".blur-it-out").removeClass("blur-it-out");
       return;
     } else {
       var $ancestors = $("*").not("html, head, body, script, style, meta, title, link, input, ul, hr, iframe, svg, g, path, img, polygon").not(":hidden")
@@ -123,9 +123,9 @@ function enforceCensorship() {
           var ancestor = getFeedlikeAncestor(elem);
           // console.log(elem);
           // console.log(ancestor);
-          // ancestor.addClass("a-quieter-internet-gray");
+          // ancestor.addClass("blur-it-out");
           return ancestor.get();
-          // ancestor.addClass("new-a-quieter-internet-gray");
+          // ancestor.addClass("new-blur-it-out");
           // // console.log(ancestor);
           // return 0;
         });
@@ -136,8 +136,8 @@ function enforceCensorship() {
 
       // my hope is that these gymnastics stop the browser from constantly re-rendering
       // the shadows in the cache.
-      $(".a-quieter-internet-gray").not($ancestors).removeClass("a-quieter-internet-gray");
-      $ancestors.not(".a-quieter-internet-gray").addClass("a-quieter-internet-gray");
+      $(".blur-it-out").not($ancestors).removeClass("blur-it-out");
+      $ancestors.not(".blur-it-out").addClass("blur-it-out");
     }
   });
 }
