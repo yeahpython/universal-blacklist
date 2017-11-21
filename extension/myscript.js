@@ -87,6 +87,24 @@ function getFeedlikeAncestor(node){
   return $(chosen_dom_element);
 }
 
+var replyRegexp = new RegExp("reply", "i");
+var commentRegexp = new RegExp("comment|retweet", "i");
+function looksLikeComment(elem) {
+  var stringContents = $(elem).contents().text();
+  // console.log(stringContents);
+  var contains_replyable = replyRegexp.test(stringContents);
+  var contains_commentable = commentRegexp.test(stringContents);
+  // console.log(contains_replyable + " " + contains_commentable);
+  // You don't need to worry about 
+  return contains_replyable && !contains_commentable;
+}
+
+// Paragraphs, comments and linkless divs all seem like they probably
+// have a relationship with their siblings in the DOM tree.
+function isStructurallyImportant(elem) {
+  return looksLikeComment(elem) || $(elem).is("p") || !($(elem).find("a").length);
+}
+
 /*$("div").click(function(e){
   getFeedlikeAncestor(e.target).css("background-color", "red");
 })*/
@@ -106,28 +124,23 @@ function enforceCensorship() {
     }
 
     if (disabled || enabled_everywhere == false) {
-      $(".a-quieter-internet-gray").removeClass("a-quieter-internet-gray");
+      // $(".a-quieter-internet-gray").removeClass("a-quieter-internet-gray");
+      $(".aqi-hide").removeClass("aqi-hide");
+      $(".aqi-notification").remove();
       return;
     } else {
-      var $ancestors = $("*").not("html, head, body, script, style, meta, title, link, input, ul, hr, iframe, svg, g, path, img, polygon").not(":hidden")
+      var $ancestors = $("*").not("html, head, body, script, style, meta, iframe, title, link, input, ul, hr, svg, g, path, img, polygon")
+        .not(":hidden")
+        .add(".aqi-hide")
         .filter(function(){
           return re.test($(this).contents()
             .filter(function() {
               return this.nodeType === 3; //Node.TEXT_NODE
             }).text());
         })
-        // .addClass("my-temp")
-        // .filter(":not(.my-temp .my-temp)")
         .map(function(index, elem){
-          // console.log(elem);
           var ancestor = getFeedlikeAncestor(elem);
-          // console.log(elem);
-          // console.log(ancestor);
-          // ancestor.addClass("a-quieter-internet-gray");
           return ancestor.get();
-          // ancestor.addClass("new-a-quieter-internet-gray");
-          // // console.log(ancestor);
-          // return 0;
         });
 
       // This sends a messages to the background script, which can see which tab ID this is.
@@ -135,10 +148,30 @@ function enforceCensorship() {
       chrome.runtime.sendMessage({"count": $ancestors.length});
 
 
+      
+
+      $(".aqi-hide").not($ancestors).removeClass("aqi-hide");
+      $ancestors.not(".aqi-hide").addClass("aqi-hide");
+      // console.log($removable);
+      // console.log($nonremovable);
+
       // my hope is that these gymnastics stop the browser from constantly re-rendering
       // the shadows in the cache.
-      $(".a-quieter-internet-gray").not($ancestors).removeClass("a-quieter-internet-gray");
-      $ancestors.not(".a-quieter-internet-gray").addClass("a-quieter-internet-gray");
+
+      // no prev ? add it
+      $ancestors.filter(function(index, elem) { return $(elem).prev(".aqi-notification").length === 0}).before("<div class='aqi-notification'><div class='aqi-inside'>[filtered]</div></div>");
+      
+      // no next? remove self
+      $(".aqi-notification").filter(function(index, elem) { return $(elem).next(".aqi-hide").length === 0}).remove();
+
+      // var $removable = $ancestors.filter(function(){return !isStructurallyImportant(this);});
+      // var $nonremovable = $ancestors.not($removable);
+
+      // $(".aqi-hide").not($removable).removeClass("aqi-hide");
+      // $removable.not(".aqi-hide").addClass("aqi-hide");
+
+      // $(".aqi-obscure").not($nonremovable).removeClass("aqi-obscure");
+      // $nonremovable.not(".aqi-obscure").addClass("aqi-obscure");
     }
   });
 }

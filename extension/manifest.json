@@ -1,7 +1,7 @@
 {
-  "name": "A Quieter Internet",
-  "description": "Remove clickbait, distraction and sensationalism with this universal keyword blocker.",
-  "version": "1.2",
+  "name": "Filter Anything Everywhere",
+  "description": "Filter feeds and lists on all websites at the same time with this universal keyword blocker.",
+  "version": "1.2.1",
   "permissions": [
     "storage",
     "https://*/*",
@@ -12,7 +12,8 @@
       "matches": ["https://*/*", "http://*/*"],
       "css": ["mystyles.css"],
       "js": ["third-party/jquery-1.12.0.min.js", "myscript.js"],
-      "run_at": "document_end"
+      "run_at": "document_end",
+      "all_frames" : true
     }
   ],
   "background": {
@@ -26,7 +27,7 @@
       "19": "images/icon19.png",
       "38": "images/icon38.png"
     },
-    "default_title": "A Quieter Internet",
+    "default_title": "Filter Anything Everywhere",
     "default_popup": "browser_action.html"
   },
   "manifest_version": 2

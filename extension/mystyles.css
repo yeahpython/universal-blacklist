@@ -12,9 +12,73 @@
 	-webkit-filter: blur(3px);
 }*/
 
-.a-quieter-internet-gray, .a-quieter-internet-gray * {
-	-webkit-filter: invert(50%) brightness(190%)/*opacity(5%)*/;
-	background-color: #888 !important;
+.aqi-obscure, .aqi-hide, .aqi-hide * {
+	-webkit-filter: opacity(0%);
+	/*background-color: #888 !important;*/
+	pointer-events: none !important;
+	height:0px;
+	max-height:0px !important;
+	overflow-y: hidden !important;
+	min-height:15px !important;
+	/*margin-bottom:15px !important;*/
+	/*max-width:0px !important;*/
+	/*overflow-x:hidden;*/
+	/*visibility:hidden !important;*/
+	/*display: none !important;*/
+	/*display:none !important;*/
+}
+
+.aqi-inside {
+	position:absolute !important;
+	left:0px;
+	top:0px;
+	color: rgba(128, 128, 128, 0.2) !important;
+	z-index: 9999;
+}
+
+.aqi-notification {
+	position:relative !important;
+	font-size: 8pt !important;
+}
+
+.aqi-hide + p, .aqi-obscure + p {
+	/*color: red !important;*/
+	/*-webkit-filter: blur(5px);*/
+}
+
+/*.aqi-obscure *, .aqi-hide * {
+	padding:10px;
+}*/
+
+.aqi-obscure, .aqi-hide/*, .aqi-obscure *, .aqi-hide **/ {
+	/*display:none !important;*/
+	/*-webkit-filter: invert(50%) brightness(190%);
+	background-color: #888 !important;*/
+}
+
+/* We don't obscure things that are structurally important.
+   this chrome extension should really be scoped to feeds.*/
+.aqi-obscure {
+	/*-webkit-filter: invert(50%) brightness(190%);
+	background-color: #888 !important;*/
+	/*display:none;*/
+}
+
+/*.a-quieter-internet-blocked-comment::after{
+	-webkit-filter: none;
+	display:block !important;
+	background-color: none;
+	display:initial;
+	content:"[filtered content]";
+	-webkit-filter:none;
+	background-color: none !important;
+}*/
+
+.aqi-hide, .aqi-hide * {
+	/*-webkit-filter: invert(50%) brightness(190%);
+	background-color: #888 !important;*/
+	/*display:none !important;*/
+	/*display: none !important;*/
 	/*display: none;*/
 	/*visibility: hidden;*/
 	/*position: relative;*/
