@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Test Extension Options</title>
+  <style>
+    body: { padding: 10px; }
+  </style>
+</head>
+
+<body>
+  Hide blocked content completely on the following hosts (A new line for each host):
+  <br>
+  <textarea name="Text1" cols="40" rows="5" id="hide_completely"></textarea>
+  <br>
+
+  Blacklisted words (A new line for each word):
+  <br>
+  <textarea name="Text2" cols="40" rows="5" id="blacklist"></textarea>
+  <br>
+
+  Disabled sites (A new line for each host):
+  <br>
+  <textarea name="Text2" cols="40" rows="5" id="disable_site"></textarea>
+  <br>
+
+
+  <label>
+    <input type="checkbox" id="enabled">
+    Enable blacklisting
+    <br>
+  </label>
+
+ 
+  <button id="save">Save</button><div id="status" style="display:inline"></div>
+
+  <script src="options.js"></script>
+</body>
+</html>

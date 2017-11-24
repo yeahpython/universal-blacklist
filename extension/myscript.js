@@ -1,5 +1,32 @@
 // var semanticModules = "ytd-grid-video-renderer, cite, time, div, blockquote, sub, em, sup, p, li, td, strong, i, b, span, h1, h2, h3, h4, h5, h6, a, button";
 
+
+
+function fetchStatusForHost(key, cb) {
+  var current_host = window.location.host;
+  chrome.storage.local.get(key, function(items) {
+    record = items[key];
+    if (record === undefined) {
+      record = {}
+    } 
+    console.log(items);
+    console.log(items[key]);
+    cb(record[current_host] === true);
+  });
+}
+
+var hide_completely_on_this_site = false;
+var disable_on_this_site = false;
+
+// Eventually sets it to the right thing. Doesn't really matter what the order is, unless
+// it gets changed to true and then we read from storage that it used to be false
+fetchStatusForHost("hide_completely", function(val) {
+  hide_completely_on_this_site = val;
+});
+fetchStatusForHost("disable_site", function(val) {
+  disable_on_this_site = val;
+});
+
 var min_feed_neighbors = 3;
 
 // Escape bad characters from user input.
@@ -111,32 +138,60 @@ function isStructurallyImportant(elem) {
 
 var disabled = false;
 
+function setHideCompletelyOnCurrentSite() {
+  var current_url = window.location.href;
+  var current_host = window.location.host;
+
+  chrome.storage.local.get("hide_completely", function(items) {
+    var hide_completely = items["hide_completely"];
+    // Add word to our copy of the blacklist
+    if (hide_completely === undefined) {
+      hide_completely = {};
+    }
+    hide_completely[current_host] = true;
+    // Set the blacklist with our modified copy
+    chrome.storage.local.set({"hide_completely": hide_completely});
+  });
+}
+
+function setDisableOnCurrentSite() {
+  var current_url = window.location.href;
+  var current_host = window.location.host;
+
+  chrome.storage.local.get({"disable_site": {}}, function(items) {
+    var disable_site = items["disable_site"];
+    // Add word to our copy of the blacklist
+    disable_site[current_host] = true;
+    // Set the blacklist with our modified copy
+    chrome.storage.local.set({"disable_site": disable_site});
+  });
+}
+
 // Blurs out anything that contains a text node containing a blacklisted word.
 // Tries not to remove and add the .a-quieter-internet-gray class unnecessarily, instead adding
 // a dummy class
 function enforceCensorship() {
   var enabled_everywhere;
-  chrome.storage.local.get(["enabled"], function(items) {
-    if (items["enabled"] == undefined) {
-      enabled_everywhere = true;
-    } else {
-      enabled_everywhere = items["enabled"];
-    }
+  chrome.storage.local.get({"enabled" : true}, function(items) {
+    enabled_everywhere = items["enabled"];
 
-    if (disabled || enabled_everywhere == false) {
+    if (disabled || enabled_everywhere == false || disable_on_this_site) {
       // $(".a-quieter-internet-gray").removeClass("a-quieter-internet-gray");
       $(".aqi-hide").removeClass("aqi-hide");
+      $(".aqi-hide-completely").removeClass("aqi-hide-completely");
       $(".aqi-notification").remove();
       return;
     } else {
       var $ancestors = $("*").not("html, head, body, script, style, meta, iframe, title, link, input, ul, hr, svg, g, path, img, polygon")
-        .not(":hidden")
-        .add(".aqi-hide")
+        // .not(":not(.aqi-hide-completely):hidden")
+        .add($(".aqi-hide, .aqi-hide-completely"))
         .filter(function(){
-          return re.test($(this).contents()
+          var text = $(this).contents()
             .filter(function() {
               return this.nodeType === 3; //Node.TEXT_NODE
-            }).text());
+            }).text();
+          var is_match = re.test(text);
+          return is_match;
         })
         .map(function(index, elem){
           var ancestor = getFeedlikeAncestor(elem);
@@ -158,8 +213,59 @@ function enforceCensorship() {
       // my hope is that these gymnastics stop the browser from constantly re-rendering
       // the shadows in the cache.
 
-      // no prev ? add it
-      $ancestors.filter(function(index, elem) { return $(elem).prev(".aqi-notification").length === 0}).before("<div class='aqi-notification'><div class='aqi-inside'>[filtered]</div></div>");
+      if (hide_completely_on_this_site) {
+        $(".aqi-notification").remove();
+
+        // Syncing seems kind of lame
+        $(".aqi-hide-completely").not(".aqi-hide").removeClass("aqi-hide-completely");
+        $(".aqi-hide").not(".aqi-hide-completely").addClass("aqi-hide-completely");
+        return;
+      } else {
+        $(".aqi-hide-completely").removeClass("aqi-hide-completely");
+      }
+
+      // If a hidden element is not preceded by something with class aqi-notification, add it.
+      $ancestors.each(function(index, elem) {
+                  var $elem = $(elem);
+                  if ($elem.prev(".aqi-notification").length !== 0) {
+                    return;
+                  }
+                  var $positioner = $("<div/>").addClass("aqi-notification");
+                  var $contents = $("<div/>").addClass("aqi-inside");
+                  var $arrow = $("<div/>").addClass("aqi-arrow");
+                  var $options = $("<div/>").addClass("aqi-options");
+                  //.text("Show | Hide warnings on this site | Disable on this site");
+
+                  var $show = $("<a/>")
+                    .text("View")
+                    .click(function() {
+                      $positioner.next(".aqi-hide").addClass("aqi-hide-exception");
+                      $positioner.addClass("aqi-disabled");
+                    });
+
+                  var $hide_warnings = $("<a/>")
+                    .text("Hide completely on this site")
+                    .click(function(){
+                      setHideCompletelyOnCurrentSite();
+                    });
+                  var $disable_aqi = $("<a/>")
+                    .text("Disable on this site")
+                    .click(function() {
+                      setDisableOnCurrentSite();
+                    });
+
+                  $options.append($show);
+                  $options.append(" | ");
+                  $options.append($hide_warnings);
+                  $options.append(" | ");
+                  $options.append($disable_aqi);
+                  
+                  $contents.append($arrow);
+                  $contents.append($options);
+                  $positioner.append($contents);
+                  $elem.before($positioner);
+                })
+                
       
       // no next? remove self
       $(".aqi-notification").filter(function(index, elem) { return $(elem).next(".aqi-hide").length === 0}).remove();
@@ -229,5 +335,19 @@ censorshipLoop();
 
 // When the blacklist changes the regex needs to be updated
 chrome.storage.onChanged.addListener(function(changes, namespace){
-  regexNeedsUpdate = true;
+  for (key in changes) {
+    if (key == "blacklist") {
+      console.log("regexNeedsUpdate");
+      regexNeedsUpdate = true;
+      continue;
+    } else if (key == "hide_completely") {
+      var hideCompletelyNewValue = changes[key].newValue;
+      var hide_completely = hideCompletelyNewValue[window.location.host];
+      hide_completely_on_this_site = (hide_completely === true);
+    } else if (key == "disable_site") {
+      var disableSiteNewValue = changes[key].newValue;
+      var disable_site = disableSiteNewValue[window.location.host];
+      disable_on_this_site = (disable_site === true);
+    }
+  }
 });
