@@ -9,8 +9,6 @@ function fetchStatusForHost(key, cb) {
     if (record === undefined) {
       record = {}
     } 
-    console.log(items);
-    console.log(items[key]);
     cb(record[current_host] === true);
   });
 }
@@ -337,7 +335,6 @@ censorshipLoop();
 chrome.storage.onChanged.addListener(function(changes, namespace){
   for (key in changes) {
     if (key == "blacklist") {
-      console.log("regexNeedsUpdate");
       regexNeedsUpdate = true;
       continue;
     } else if (key == "hide_completely") {
