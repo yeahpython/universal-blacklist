@@ -1,6 +1,6 @@
 {
   "name": "Filter Anything Everywhere",
-  "description": "Filter feeds and lists on all websites at the same time with this universal keyword blocker.",
+  "description": "Filter feeds, lists and comment sections on all websites at the same time with this universal keyword blocker.",
   "version": "1.2.1",
   "permissions": [
     "storage",
@@ -21,7 +21,7 @@
     "scripts":["background.js"]
   },
   "icons": {
-    "128": "images/icon128.png"
+    "128": "images/glasses128.png"
     },
   "options_ui": {
     "page" : "options.html",
@@ -29,8 +29,8 @@
   },
   "browser_action": {
     "default_icon": {
-      "19": "images/icon19.png",
-      "38": "images/icon38.png"
+      "19": "images/glasses19.png",
+      "38": "images/glasses38.png"
     },
     "default_title": "Filter Anything Everywhere",
     "default_popup": "browser_action.html"
