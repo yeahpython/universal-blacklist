@@ -1,10 +1,16 @@
-.aqi-hide:not(.aqi-hide-exception), .aqi-hide:not(.aqi-hide-exception) * {
-	-webkit-filter: opacity(0%);
-	pointer-events: none !important;
-	height:0px;
+.aqi-hide:not(.aqi-hide-exception) * {
 	max-height:0px !important;
+}
+
+.aqi-hide:not(.aqi-hide-exception){
+	/*-webkit-filter: opacity(100%);*/
+	visibility: hidden !important;
+	pointer-events: none !important;
+	line-height:0px;
+	height:30px;
+	max-height:30px !important;
 	overflow-y: hidden !important;
-	min-height:15px !important;
+	min-height:30px !important;
 }
 
 .aqi-hide-completely {
@@ -18,23 +24,42 @@
 	z-index: 9999 !important;
 	display: inline !important;
 	/*width: 500px!important;*/
-	white-space: nowrap !important
+	white-space: nowrap !important;
 }
-
+.aqi-arrow-wrapper {
+	padding:10px;
+	cursor:pointer;
+	display:inline-block !important;
+	vertical-align: middle;
+	line-height:0px;
+	cursor:pointer;
+}
 .aqi-arrow {
 	width: 0 !important; 
     height: 0 !important; 
-    border-top: 3px solid transparent !important;
-    border-bottom: 3px solid transparent !important;
+    border-top: 5px solid transparent !important;
+    border-bottom: 5px solid transparent !important;
   
-    border-left: 3px solid rgba(0, 0, 0, 0.2);
+    border-left: 5px solid rgba(0, 0, 0, 0.5);
     display:inline-block !important;
-    margin-left:10px;
-    margin-right:10px;
+    /*margin-left:10px;
+    margin-right:10px;*/
+    vertical-align: middle;
+    line-height:0px;
+    cursor:pointer;
 }
 
 .aqi-notification.aqi-disabled {
 	display:none !important;
+	/*top:-35px !important;*/
+	/*background-color: white;
+	border: solid 1px black;*/
+}
+
+.aqi-notification.aqi-disabled .aqi-arrow-wrapper {
+	/*display:none !important;*/
+	/*background-color: white;*/
+	/*border: solid 1px black;*/
 }
 
 .aqi-notification:not(:hover) .aqi-inside {
@@ -45,7 +70,15 @@
 }
 
 .aqi-notification .aqi-options {
-	display: inline !important;
+	display: none !important;
+}
+
+.aqi-options {
+	/*display:none !important;*/
+	background-color: white !important;
+	border: solid 1px black !important;
+	padding:5px;
+	vertical-align: middle;
 }
 
 .aqi-options * {

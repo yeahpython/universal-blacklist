@@ -1,11 +1,20 @@
-// Saves options to chrome.storage.sync.
+// options.js, myscript.js and browser_action.js all need to have the same version
+function getCanonicalHostname(name) {
+  if (name.startsWith("www.")) {
+    return name.substring(4);
+  } else {
+    return name;
+  }
+}
+
+// Saves options to chrome.storage.local.
 function save_options() {
   var hide_completely_string = document.getElementById('hide_completely').value;
   var hide_completely_strings = hide_completely_string.split('\n');
   var hide_completely = {};
   hide_completely_strings.forEach(function(element) {
     if (element) {
-      hide_completely[element] = true
+      hide_completely[getCanonicalHostname(element)] = true
     }
   });
 
@@ -23,7 +32,7 @@ function save_options() {
   var disable_site = {};
   disable_site_strings.forEach(function(element) {
     if (element) {
-      disable_site[element] = true
+      disable_site[getCanonicalHostname(element)] = true
     }
   });
 

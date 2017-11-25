@@ -2,7 +2,10 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 	if (msg.action == "toggleActiveTab") {
 		toggleActiveTab();
 	} else {
-    	chrome.storage.local.set({"badge_info":{"id":sender.tab.id, "count":msg.count}})
+		console.log(msg);
+		var count_string = msg.count ? msg.count.toString() : "";
+		chrome.browserAction.setBadgeBackgroundColor({ color: [100, 100, 100, 255] });
+		chrome.browserAction.setBadgeText({text: count_string, "tabId": sender.tab.id});
 	}
 });
 

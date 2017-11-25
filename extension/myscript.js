@@ -1,15 +1,21 @@
 // var semanticModules = "ytd-grid-video-renderer, cite, time, div, blockquote, sub, em, sup, p, li, td, strong, i, b, span, h1, h2, h3, h4, h5, h6, a, button";
 
+window.hasAqi = true;
 
+// options.js, myscript.js and browser_action.js all need to have the same version
+function getCanonicalHostname(name) {
+  if (name.startsWith("www.")) {
+    return name.substring(4);
+  } else {
+    return name;
+  }
+}
 
 function fetchStatusForHost(key, cb) {
+  var key = getCanonicalHostname(key);
   var current_host = window.location.host;
-  chrome.storage.local.get(key, function(items) {
-    record = items[key];
-    if (record === undefined) {
-      record = {}
-    } 
-    cb(record[current_host] === true);
+  chrome.storage.local.get({key : {}}, function(items) {
+    cb(items[key][current_host] === true);
   });
 }
 
@@ -33,19 +39,19 @@ function escapeRegExp(str) {
 }
 
 function makeRegexCharactersOkay(string){
-    var hex, i;
+  var hex, i;
 
-    var result = "";
-    for (i=0; i<string.length; i++) {
-        hex = string.charCodeAt(i);
-        if (hex < 256) {
-          result += string.charAt(i);
-        } else {
-          hex = hex.toString(16);
-          result += "\\u" + (("000"+hex).slice(-4));
-        }
-    }
-    return result;
+  var result = "";
+  for (i=0; i<string.length; i++) {
+      hex = string.charCodeAt(i);
+      if (hex < 256) {
+        result += string.charAt(i);
+      } else {
+        hex = hex.toString(16);
+        result += "\\u" + (("000"+hex).slice(-4));
+      }
+  }
+  return result;
 }
 
 // This will be a regex that matches blacklisted strings
@@ -165,6 +171,32 @@ function setDisableOnCurrentSite() {
   });
 }
 
+function findMyId() {
+  var iframes = parent.document.getElementsByTagName("iframe");
+  
+  for (var i=0, len=iframes.length; i < len; ++i) {
+    if (document == iframes[i].contentDocument ||
+        self == iframes[i].contentWindow) {
+        return iframes[i].id;
+    }
+  }
+  return "";
+}
+try {
+  var my_id = findMyId();
+}
+catch(err) {
+  var my_id = "ignore";
+}
+
+function inIframe () {
+    try {
+        return window.self !== window.top;
+    } catch (e) {
+        return true;
+    }
+}
+
 // Blurs out anything that contains a text node containing a blacklisted word.
 // Tries not to remove and add the .a-quieter-internet-gray class unnecessarily, instead adding
 // a dummy class
@@ -198,8 +230,13 @@ function enforceCensorship() {
 
       // This sends a messages to the background script, which can see which tab ID this is.
       // The background script then makes an update to storage that triggers a change in the icon.
-      chrome.runtime.sendMessage({"count": $ancestors.length});
-
+      // console.log(window.frameElement.getAttribute("Name"));
+      if (my_id !== "ignore") {
+        // For now, only count number of blocked things in outermost div.
+        if (!inIframe()) {
+          chrome.runtime.sendMessage({"count": $ancestors.length});
+        }
+      }
 
       
 
@@ -229,20 +266,25 @@ function enforceCensorship() {
                     return;
                   }
                   var $positioner = $("<div/>").addClass("aqi-notification");
-                  var $contents = $("<div/>").addClass("aqi-inside");
+                  var $contents = $("<div/>").addClass("aqi-inside")
+                    .css("max-width", $elem.width());
                   var $arrow = $("<div/>").addClass("aqi-arrow");
+                  var $arrow_wrapper = $("<div/>").addClass("aqi-arrow-wrapper").click(function() {
+                      $positioner.next(".aqi-hide").addClass("aqi-hide-exception");
+                      $positioner.addClass("aqi-disabled");
+                    }).append($arrow);
                   var $options = $("<div/>").addClass("aqi-options");
                   //.text("Show | Hide warnings on this site | Disable on this site");
 
-                  var $show = $("<a/>")
-                    .text("View")
-                    .click(function() {
-                      $positioner.next(".aqi-hide").addClass("aqi-hide-exception");
-                      $positioner.addClass("aqi-disabled");
-                    });
+                  // var $show = $("<a/>")
+                  //   .text("View")
+                  //   .click(function() {
+                  //     $positioner.next(".aqi-hide").addClass("aqi-hide-exception");
+                  //     $positioner.addClass("aqi-disabled");
+                  //   });
 
                   var $hide_warnings = $("<a/>")
-                    .text("Hide completely on this site")
+                    .text("Hide warning on this site")
                     .click(function(){
                       setHideCompletelyOnCurrentSite();
                     });
@@ -252,13 +294,13 @@ function enforceCensorship() {
                       setDisableOnCurrentSite();
                     });
 
-                  $options.append($show);
-                  $options.append(" | ");
+                  // $options.append($show);
+                  // $options.append(" | ");
                   $options.append($hide_warnings);
                   $options.append(" | ");
                   $options.append($disable_aqi);
                   
-                  $contents.append($arrow);
+                  $contents.append($arrow_wrapper);
                   $contents.append($options);
                   $positioner.append($contents);
                   $elem.before($positioner);
@@ -287,7 +329,16 @@ function censorshipLoop() {
   if (regexNeedsUpdate) {
     makeRegex(enforceCensorship);
   } else {
-    enforceCensorship();
+    try {
+      enforceCensorship();
+    } catch (err){
+      if (err.message.startsWith("Invocation of form get(, function)")) {
+        return;
+      }
+      else {
+        throw "Failed to enforce filter: " + err;
+      }
+    }
   }
   setTimeout(censorshipLoop, 1000);
 }
@@ -339,11 +390,11 @@ chrome.storage.onChanged.addListener(function(changes, namespace){
       continue;
     } else if (key == "hide_completely") {
       var hideCompletelyNewValue = changes[key].newValue;
-      var hide_completely = hideCompletelyNewValue[window.location.host];
+      var hide_completely = hideCompletelyNewValue[getCanonicalHostname(window.location.host)];
       hide_completely_on_this_site = (hide_completely === true);
     } else if (key == "disable_site") {
       var disableSiteNewValue = changes[key].newValue;
-      var disable_site = disableSiteNewValue[window.location.host];
+      var disable_site = disableSiteNewValue[getCanonicalHostname(window.location.host)];
       disable_on_this_site = (disable_site === true);
     }
   }
