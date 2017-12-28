@@ -11,10 +11,15 @@ function getCanonicalHostname(name) {
   }
 }
 
+// Utility function for getting settings for the current host.
 function fetchStatusForHost(key, cb) {
   var key = getCanonicalHostname(key);
   var current_host = window.location.host;
-  chrome.storage.local.get({key : {}}, function(items) {
+  chrome.storage.local.get(key, function(items) {
+    if (items[key] === undefined) {
+      cb(false);
+      return;
+    }
     cb(items[key][current_host] === true);
   });
 }
@@ -34,10 +39,19 @@ fetchStatusForHost("disable_site", function(val) {
 var min_feed_neighbors = 3;
 
 // Escape bad characters from user input.
-function escapeRegExp(str) {
+function escapeRegExpOld(str) {
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
 
+// Escape bad characters from user input, but allow wildcards.
+function escapeRegExp(str) {
+  return str.replace(/[\-\[\]\/\{\}\(\)\+\.\\\^\$\|]/g, "\\$&")
+            .replace(/\*/g, "[^\s]*")
+            .replace(/\?/g, "[^\s]");
+}
+
+// Some characters are represented by more than a byte. To match them
+// in a regular expression, we need to modify the way they are stored.
 function makeRegexCharactersOkay(string){
   var hex, i;
 
