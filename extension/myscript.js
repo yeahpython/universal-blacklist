@@ -2,6 +2,8 @@
 
 window.hasAqi = true;
 
+var AQI_PREFIX = "aqi-"
+
 // options.js, myscript.js and browser_action.js all need to have the same version
 function getCanonicalHostname(name) {
   if (name.startsWith("www.")) {
@@ -46,8 +48,8 @@ function escapeRegExpOld(str) {
 // Escape bad characters from user input, but allow wildcards.
 function escapeRegExp(str) {
   return str.replace(/[\-\[\]\/\{\}\(\)\+\.\\\^\$\|]/g, "\\$&")
-            .replace(/\*/g, "[^\s]*")
-            .replace(/\?/g, "[^\s]");
+            .replace(/\*/g, "[^\\s]*")
+            .replace(/\?/g, "[^\\s]");
 }
 
 // Some characters are represented by more than a byte. To match them
@@ -95,25 +97,34 @@ function getFeedlikeAncestor(node){
     }
 
     // three siblings is good enough to be a list.
-    return Math.min($(elem).siblings().not(":hidden").filter(function(index, sib){
+    // I used to check whether or not siblings were hidden, but this caused problems
+    // when there were large hidden arrays of objects, e.g. in Youtube, which would
+    // cause the whole page to be hidden. This new setting hopefully is less prone
+    // to hiding entire lists.
+
+    var matching_siblings = $(elem).siblings()/*.not(":hidden")*/.filter(function(index, sib){
       // Function returns true iff sibling has a class in common with the original.
       var $sib = $(sib)
+
+      if (elem.tagName != sib.tagName) {
+        return false;
+      }
 
       // hacking to just compare number of children
       // return $sib.children().length == num_children;
       for (var i = 0; i < my_class_split.length; i++){
         // TODO: remove earlier
-        if ((my_class_split[i] !== "") && (my_class_split !== "a-quieter-internet-gray") && $sib.hasClass(my_class_split[i])) {
+        if ((my_class_split[i] !== "") && (!(my_class_split[i].startsWith(AQI_PREFIX))) && $sib.hasClass(my_class_split[i])) {
           return true;
         }
       }
       return false;
-    }).length, min_feed_neighbors);
+    });
+    return Math.min(matching_siblings.length, min_feed_neighbors);
   }); //n_siblings
 
   var best_count = -1;
   var best_index = -1;
-  // console.log(siblingness_counts);
 
   // Note, parents were ordered by document order
   for (var i = siblingness_counts.length - 1; i >= 0; i--) {
@@ -226,9 +237,16 @@ function enforceCensorship() {
       $(".aqi-notification").remove();
       return;
     } else {
-      var $ancestors = $("*").not("html, head, body, script, style, meta, iframe, title, link, input, ul, hr, svg, g, path, img, polygon")
-        // .not(":not(.aqi-hide-completely):hidden")
-        .add($(".aqi-hide, .aqi-hide-completely"))
+      // You aren't really hiding it if it's already hidden by an ancestor.
+      $(":hidden .aqi-hide").removeClass("aqi-hide");
+      $(":hidden .aqi-hide-completely").removeClass("aqi-hide-completely");
+      $(":hidden .aqi-notification").remove();
+
+      // If an element we are hiding becomes hidden from other CSS, we won't really notice.
+      var $ancestors = $("*")
+        .not(":hidden") // We don't bother to process hidden things unless we hid them.
+        .add($(".aqi-hide *, .aqi-hide-completely *"))
+        .not("html, head, body, script, style, meta, iframe, title, link, input, ul, hr, svg, g, path, img, polygon")
         .filter(function(){
           var text = $(this).contents()
             .filter(function() {
