@@ -25,18 +25,6 @@ function fetchStatusForHost(key, cb) {
   });
 }
 
-var hide_completely_on_this_site = false;
-var disable_on_this_site = false;
-
-// Eventually sets it to the right thing. Doesn't really matter what the order is, unless
-// it gets changed to true and then we read from storage that it used to be false
-fetchStatusForHost("hide_completely", function(val) {
-  hide_completely_on_this_site = val;
-});
-fetchStatusForHost("disable_site", function(val) {
-  disable_on_this_site = val;
-});
-
 var min_feed_neighbors = 3;
 
 // Escape bad characters from user input.
