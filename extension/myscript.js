@@ -164,8 +164,6 @@ function isStructurallyImportant(elem) {
   getFeedlikeAncestor(e.target).css("background-color", "red");
 })*/
 
-var disabled = false;
-
 function setHideCompletelyOnCurrentSite() {
   var current_url = window.location.href;
   var current_host = window.location.host;
@@ -300,12 +298,6 @@ function makeRegex(callback) {
     console.log("Ran into error while making regex:" + err.message);
   }
 }
-
-chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
-  if (msg.action == 'toggle_disable') {
-    disabled = true;
-  }
-});
 
 function processTextNode(node, hide_completely, regex) {
   if (regex.test(node.data)) {
