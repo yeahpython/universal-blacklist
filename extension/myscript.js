@@ -15,8 +15,7 @@ function getCanonicalHostname(name) {
 
 // Utility function for getting settings for the current host.
 function fetchStatusForHost(key, cb) {
-  var key = getCanonicalHostname(key);
-  var current_host = window.location.host;
+  var current_host = getCanonicalHostname(window.location.host);
   chrome.storage.local.get(key, function(items) {
     if (items[key] === undefined) {
       cb(false);
@@ -222,6 +221,56 @@ function inIframe () {
     }
 }
 
+function addNotification(unused_index, elem) {
+  var $elem = $(elem);
+  if ($elem.prev(".aqi-notification").length !== 0) {
+    return;
+  }
+  if ($.isWindow($elem)) {
+    console.log("This is a window");
+    return;
+  }
+  var $positioner = $("<div/>").addClass("aqi-notification");
+  var $contents = $("<div/>").addClass("aqi-inside")
+    .css("max-width", $elem.width());
+  var $arrow = $("<div/>").addClass("aqi-arrow");
+  var $arrow_wrapper = $("<div/>").addClass("aqi-arrow-wrapper").click(function() {
+      $positioner.next(".aqi-hide").addClass("aqi-hide-exception");
+      $positioner.addClass("aqi-disabled");
+    }).append($arrow);
+  var $options = $("<div/>").addClass("aqi-options");
+  //.text("Show | Hide warnings on this site | Disable on this site");
+
+  // var $show = $("<a/>")
+  //   .text("View")
+  //   .click(function() {
+  //     $positioner.next(".aqi-hide").addClass("aqi-hide-exception");
+  //     $positioner.addClass("aqi-disabled");
+  //   });
+
+  var $hide_warnings = $("<a/>")
+    .text("Hide warning on this site")
+    .click(function(){
+      setHideCompletelyOnCurrentSite();
+    });
+  var $disable_aqi = $("<a/>")
+    .text("Disable on this site")
+    .click(function() {
+      setDisableOnCurrentSite();
+    });
+
+  // $options.append($show);
+  // $options.append(" | ");
+  $options.append($hide_warnings);
+  $options.append(" | ");
+  $options.append($disable_aqi);
+  
+  $contents.append($arrow_wrapper);
+  $contents.append($options);
+  $positioner.append($contents);
+  $elem.before($positioner);
+}
+
 // Blurs out anything that contains a text node containing a blacklisted word.
 // Tries not to remove and add the .a-quieter-internet-gray class unnecessarily, instead adding
 // a dummy class
@@ -292,51 +341,7 @@ function enforceCensorship() {
       }
 
       // If a hidden element is not preceded by something with class aqi-notification, add it.
-      $ancestors.each(function(index, elem) {
-                  var $elem = $(elem);
-                  if ($elem.prev(".aqi-notification").length !== 0) {
-                    return;
-                  }
-                  var $positioner = $("<div/>").addClass("aqi-notification");
-                  var $contents = $("<div/>").addClass("aqi-inside")
-                    .css("max-width", $elem.width());
-                  var $arrow = $("<div/>").addClass("aqi-arrow");
-                  var $arrow_wrapper = $("<div/>").addClass("aqi-arrow-wrapper").click(function() {
-                      $positioner.next(".aqi-hide").addClass("aqi-hide-exception");
-                      $positioner.addClass("aqi-disabled");
-                    }).append($arrow);
-                  var $options = $("<div/>").addClass("aqi-options");
-                  //.text("Show | Hide warnings on this site | Disable on this site");
-
-                  // var $show = $("<a/>")
-                  //   .text("View")
-                  //   .click(function() {
-                  //     $positioner.next(".aqi-hide").addClass("aqi-hide-exception");
-                  //     $positioner.addClass("aqi-disabled");
-                  //   });
-
-                  var $hide_warnings = $("<a/>")
-                    .text("Hide warning on this site")
-                    .click(function(){
-                      setHideCompletelyOnCurrentSite();
-                    });
-                  var $disable_aqi = $("<a/>")
-                    .text("Disable on this site")
-                    .click(function() {
-                      setDisableOnCurrentSite();
-                    });
-
-                  // $options.append($show);
-                  // $options.append(" | ");
-                  $options.append($hide_warnings);
-                  $options.append(" | ");
-                  $options.append($disable_aqi);
-                  
-                  $contents.append($arrow_wrapper);
-                  $contents.append($options);
-                  $positioner.append($contents);
-                  $elem.before($positioner);
-                })
+      $ancestors.each(addNotification);
                 
       
       // no next? remove self
@@ -411,23 +416,108 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
   }
 });
 
-// Initiates censorship loop.
-censorshipLoop();
-
-// When the blacklist changes the regex needs to be updated
-chrome.storage.onChanged.addListener(function(changes, namespace){
-  for (key in changes) {
-    if (key == "blacklist") {
-      regexNeedsUpdate = true;
-      continue;
-    } else if (key == "hide_completely") {
-      var hideCompletelyNewValue = changes[key].newValue;
-      var hide_completely = hideCompletelyNewValue[getCanonicalHostname(window.location.host)];
-      hide_completely_on_this_site = (hide_completely === true);
-    } else if (key == "disable_site") {
-      var disableSiteNewValue = changes[key].newValue;
-      var disable_site = disableSiteNewValue[getCanonicalHostname(window.location.host)];
-      disable_on_this_site = (disable_site === true);
+function processTextNode(node, hide_completely, regex) {
+  if (regex.test(node.data)) {
+    var ancestor = getFeedlikeAncestor(node);
+    try {
+      if (hide_completely) {
+        ancestor.addClass("aqi-hide-completely");
+      } else {
+        addNotification(null, ancestor);
+        ancestor.addClass("aqi-hide");
+      }
+    } catch (e) {
+      console.log("hit error adding notification.");
     }
   }
+}
+
+var observer = null;
+
+function startObservingChanges(processCallback) {
+  const targetNode = document.documentElement;
+  const config = {attributes: false, childList: false, characterData: true, subtree: true};
+  const callback = function(mutationsList, observer) {
+    for (let mutation of mutationsList) {
+      if (mutation.type === 'characterData') {
+        processCallback(mutation.target);
+      }
+    }
+  }
+  observer = new MutationObserver(callback);
+  observer.observe(targetNode, config);
+}
+
+function clearAll() {
+  if (observer) {
+    observer.disconnect();
+  }
+  $(".aqi-hide").removeClass("aqi-hide");
+  $(".aqi-hide-completely").removeClass("aqi-hide-completely");
+  $(".aqi-notification").remove();
+  $(".aqi-debug").removeClass("aqi-debug");
+}
+
+function render(enabled_everywhere, hide_completely, disable_site, regex) {
+  clearAll();
+
+  if (!enabled_everywhere || disable_site) {
+    return;
+  }
+
+  let process = (node) => {processTextNode(node, hide_completely, regex)}
+
+  walk=document.createTreeWalker(document.documentElement,NodeFilter.SHOW_TEXT,null,false);
+  while (walk.nextNode()) {
+    process(walk.currentNode);
+  }
+  startObservingChanges(process);
+}
+
+// Fetch all parameters and then redraw
+function restart() {
+  let enabled_everywhere, hide_completely, disable_site;
+  // todo: Do it in one operation.
+  new Promise((resolve, reject) => {
+    chrome.storage.local.get({"enabled" : true}, (items) => resolve(items["enabled"]));
+  })
+  .then( (enabled_everywhere_in) => {
+    enabled_everywhere = enabled_everywhere_in;
+    return new Promise((resolve, reject) => {
+      fetchStatusForHost("hide_completely", resolve);
+    });
+  })
+  .then(hide_completely_in => {
+    hide_completely = hide_completely_in;
+    return new Promise((resolve, reject) => {
+      fetchStatusForHost("disable_site", resolve);
+    });
+  })
+  .then((disable_site_in) => {
+    disable_site = disable_site_in;
+    return new Promise((resolve, reject) => {
+      makeRegex(resolve);
+    });
+  })
+  .then(() => {
+    render(enabled_everywhere, hide_completely, disable_site, re);
+
+    // This sends a messages to the background script, which can see which tab ID this is.
+    // The background script then makes an update to storage that triggers a change in the icon.
+    // console.log(window.frameElement.getAttribute("Name"));
+    if (my_id !== "ignore") {
+      // For now, only count number of blocked things in outermost div.
+      if (!inIframe()) {
+        chrome.runtime.sendMessage({"count": $(".aqi-hide").length});
+      }
+    }
+  })
+  .catch((err)=> console.log(err));
+}
+
+// When the blacklist changes the regex needs to be updated
+chrome.storage.onChanged.addListener(function(changes, namespace) {
+  restart();
 });
+
+restart();
