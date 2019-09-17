@@ -69,12 +69,6 @@ function makeRegexCharactersOkay(string){
   return result;
 }
 
-// This will be a regex that matches blacklisted strings
-var re;
-
-// Set to true when the user updates the blacklist
-var regexNeedsUpdate = true;
-
 
 
 
@@ -234,9 +228,7 @@ function makeRegex(callback) {
         // Rejects everything
         regexString = "[^\\w\\W]";
       }
-      re = new RegExp(regexString, "i");
-      regexNeedsUpdate = false;
-      callback();
+      callback(new RegExp(regexString, "i"));
     });
   } catch (err) {
     console.log("Ran into error while making regex:" + err.message);
@@ -326,8 +318,8 @@ function restart() {
       makeRegex(resolve);
     });
   })
-  .then(() => {
-    render(enabled_everywhere, hide_completely, disable_site, re);
+  .then((regex) => {
+    render(enabled_everywhere, hide_completely, disable_site, regex);
 
     // This sends a messages to the background script, which can see which tab ID this is.
     // The background script then makes an update to storage that triggers a change in the icon.
