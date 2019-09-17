@@ -124,24 +124,6 @@ function getFeedlikeAncestor(node){
   return $(chosen_dom_element);
 }
 
-var replyRegexp = new RegExp("reply", "i");
-var commentRegexp = new RegExp("comment|retweet", "i");
-function looksLikeComment(elem) {
-  var stringContents = $(elem).contents().text();
-  // console.log(stringContents);
-  var contains_replyable = replyRegexp.test(stringContents);
-  var contains_commentable = commentRegexp.test(stringContents);
-  // console.log(contains_replyable + " " + contains_commentable);
-  // You don't need to worry about 
-  return contains_replyable && !contains_commentable;
-}
-
-// Paragraphs, comments and linkless divs all seem like they probably
-// have a relationship with their siblings in the DOM tree.
-function isStructurallyImportant(elem) {
-  return looksLikeComment(elem) || $(elem).is("p") || !($(elem).find("a").length);
-}
-
 /*$("div").click(function(e){
   getFeedlikeAncestor(e.target).css("background-color", "red");
 })*/
