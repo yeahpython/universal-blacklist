@@ -164,35 +164,6 @@ function isStructurallyImportant(elem) {
   getFeedlikeAncestor(e.target).css("background-color", "red");
 })*/
 
-function setHideCompletelyOnCurrentSite() {
-  var current_url = window.location.href;
-  var current_host = window.location.host;
-
-  chrome.storage.local.get("hide_completely", function(items) {
-    var hide_completely = items["hide_completely"];
-    // Add word to our copy of the blacklist
-    if (hide_completely === undefined) {
-      hide_completely = {};
-    }
-    hide_completely[current_host] = true;
-    // Set the blacklist with our modified copy
-    chrome.storage.local.set({"hide_completely": hide_completely});
-  });
-}
-
-function setDisableOnCurrentSite() {
-  var current_url = window.location.href;
-  var current_host = window.location.host;
-
-  chrome.storage.local.get({"disable_site": {}}, function(items) {
-    var disable_site = items["disable_site"];
-    // Add word to our copy of the blacklist
-    disable_site[current_host] = true;
-    // Set the blacklist with our modified copy
-    chrome.storage.local.set({"disable_site": disable_site});
-  });
-}
-
 function findMyId() {
   var iframes = parent.document.getElementsByTagName("iframe");
   
@@ -236,35 +207,8 @@ function addNotification(unused_index, elem) {
       $positioner.next(".aqi-hide").addClass("aqi-hide-exception");
       $positioner.addClass("aqi-disabled");
     }).append($arrow);
-  var $options = $("<div/>").addClass("aqi-options");
-  //.text("Show | Hide warnings on this site | Disable on this site");
-
-  // var $show = $("<a/>")
-  //   .text("View")
-  //   .click(function() {
-  //     $positioner.next(".aqi-hide").addClass("aqi-hide-exception");
-  //     $positioner.addClass("aqi-disabled");
-  //   });
-
-  var $hide_warnings = $("<a/>")
-    .text("Hide warning on this site")
-    .click(function(){
-      setHideCompletelyOnCurrentSite();
-    });
-  var $disable_aqi = $("<a/>")
-    .text("Disable on this site")
-    .click(function() {
-      setDisableOnCurrentSite();
-    });
-
-  // $options.append($show);
-  // $options.append(" | ");
-  $options.append($hide_warnings);
-  $options.append(" | ");
-  $options.append($disable_aqi);
   
   $contents.append($arrow_wrapper);
-  $contents.append($options);
   $positioner.append($contents);
   $elem.before($positioner);
 }
