@@ -203,7 +203,12 @@ function makeRegex(callback) {
       //   regexString = "";
       // } else {
   	    var escapedBannedWords = $.map(bannedWords, function(val, key) {
-  	      return "\\b" + escapeRegExp(key) + "\\b";
+          if (key.match(/[\u3400-\u9FBF]/)) {
+            // Do not require word endings for Chinese characters.
+            return escapeRegExp(key);
+          } else {
+  	        return "\\b" + escapeRegExp(key) + "\\b";
+          }
   	    });
   	    var regexString = escapedBannedWords.map(function(elem, index){
   	      return makeRegexCharactersOkay(elem);
