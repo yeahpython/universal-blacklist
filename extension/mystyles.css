@@ -1,16 +1,25 @@
-.aqi-hide:not(.aqi-hide-exception) * {
+/* If notification is inside, supress non-notification children */
+.aqi-hide.aqi-put-inside-mode:not(.aqi-hide-exception) > *:not(.aqi-notification) {
+	visibility: hidden !important;
+	pointer-events: none !important;
 	max-height:0px !important;
 }
 
-.aqi-hide:not(.aqi-hide-exception){
+/* Restrict size of hidden content */
+.aqi-hide:not(.aqi-hide-exception) {
 	/*-webkit-filter: opacity(100%);*/
-	visibility: hidden !important;
-	pointer-events: none !important;
 	line-height:0px;
 	height:30px;
 	max-height:30px !important;
 	overflow-y: hidden !important;
+	overflow-x: hidden !important;
 	min-height:30px !important;
+}
+
+/* Hide contents completely if notification is NOT inside */
+.aqi-hide:not(.aqi-put-inside-mode):not(.aqi-hide-exception) {
+	visibility: hidden !important;
+	pointer-events: none !important;
 }
 
 .aqi-hide-completely {
